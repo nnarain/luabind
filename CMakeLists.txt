@@ -18,7 +18,7 @@ ExternalProject_Add(
 	lua
 
 	GIT_REPOSITORY "https://github.com/nnarain/lua-core.git"
-	GIT_TAG "develop"
+	GIT_TAG "master"
 
 	SOURCE_DIR "${EXTERNALS_DIR}/lua-core"
 	BINARY_DIR ${BINARY_DIR}
@@ -42,8 +42,12 @@ include_directories(
 
 file(GLOB_RECURSE LUABIND_SRC "src/*.cpp")
 
+if(NOT BUILD_TYPE)
+	set(BUILD_TYPE SHARED)
+endif(NOT BUILD_TYPE)
+
 # build luabind
-add_library(${PROJECT_NAME}
+add_library(${PROJECT_NAME} ${BUILD_TYPE}
 	${LUABIND_SRC}
 )
 
@@ -51,3 +55,11 @@ target_link_libraries(${PROJECT_NAME}
 	${Boost_LIBRARIES}
 )
 
+# install
+install(
+	TARGETS
+		${PROJECT_NAME}
+
+	LIBRARY DESTINATION lib
+	ARCHIVE DESTINATION lib
+)
