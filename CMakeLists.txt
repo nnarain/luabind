@@ -63,3 +63,12 @@ install(
 	LIBRARY DESTINATION lib
 	ARCHIVE DESTINATION lib
 )
+
+file(GLOB_RECURSE INSTALL_HEADERS "luabind/*.hpp")
+
+install(
+	FILES
+		${INSTALL_HEADERS}
+	DESTINATION
+		include/luabind
+)
