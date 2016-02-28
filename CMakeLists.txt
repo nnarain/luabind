@@ -1,54 +1,53 @@
 # Build for LuaBind
-# Ryan Pavlik <rpavlik@iastate.edu>
-# http://academic.cleardefinition.com/
-# Iowa State University HCI Graduate Program/VRAC
+# @author Natesh Narain
 
 cmake_minimum_required(VERSION 2.8)
 
-if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
-	# We are the top-level project
-	set_property(GLOBAL PROPERTY USE_FOLDERS ON)
-endif()
+project(luabind)
 
-set(CMAKE_LEGACY_CYGWIN_WIN32 0) # Remove when CMake >= 2.8.4 is required
-project(LuaBind)
+include(ExternalProject)
 
-set(CPACK_PACKAGE_VERSION_MAJOR "0")
-set(CPACK_PACKAGE_VERSION_MINOR "9")
-set(CPACK_PACKAGE_VERSION_PATCH "1")
-set(CPACK_PACKAGE_VERSION
-	"${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}")
+set(BUILD_DIR "build")
+set(EXTERNALS_DIR "${BUILD_DIR}/externals")
+set(BINARY_DIR "${BUILD_DIR}/bin")
 
-if(NOT Boost_FOUND)
-	find_package(Boost REQUIRED)
-endif()
+set(LUA_PATH "${CMAKE_BINARY_DIR}/${EXTERNALS_DIR}/lua-core")
 
-if(NOT LUA_FOUND AND NOT LUA51_FOUND)
-	find_package(Lua51 REQUIRED)
-	set(LUA_INCLUDE_DIRS "${LUA_INCLUDE_DIR}")
-endif()
+# download lua 5.2 from repo
+ExternalProject_Add(
+	lua
 
-if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
-	# We are the top-level project
-	option(INSTALL_LUABIND "Install the LuaBind library and headers" ON)
-	option(BUILD_SHARED_LUABIND "Build luabind as a shared library?" OFF)
-	include(CTest)
-endif()
+	GIT_REPOSITORY "https://github.com/nnarain/lua-core.git"
+	GIT_TAG "develop"
 
-set(BUILD_SHARED_LIBS ${BUILD_SHARED_LUABIND})
-if(BUILD_SHARED_LIBS)
-	add_definitions(-DLUABIND_DYNAMIC_LINK)
-endif()
+	SOURCE_DIR "${EXTERNALS_DIR}/lua-core"
+	BINARY_DIR ${BINARY_DIR}
 
-include_directories(${Boost_INCLUDE_DIRS}
-	"${CMAKE_CURRENT_SOURCE_DIR}"
-	${LUA_INCLUDE_DIRS})
+	UPDATE_COMMAND  ""
+	PATCH_COMMAND   ""
+	INSTALL_COMMAND ""
+)
 
-add_subdirectory(src)
+message("-- lua-core path: ${LUA_PATH}")
 
-if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
-	if(BUILD_TESTING)
-		add_subdirectory(test)
-	endif()
-	add_subdirectory(doc)
-endif()
+find_package(Boost REQUIRED)
+
+include_directories(
+	${CMAKE_SOURCE_DIR} # luabind
+
+	${LUA_PATH}/include
+
+	${Boost_INCLUDE_DIRS}
+)
+
+file(GLOB_RECURSE LUABIND_SRC "src/*.cpp")
+
+# build luabind
+add_library(${PROJECT_NAME}
+	${LUABIND_SRC}
+)
+
+target_link_libraries(${PROJECT_NAME}
+	${Boost_LIBRARIES}
+)
+
