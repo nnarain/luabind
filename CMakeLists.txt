@@ -8,7 +8,7 @@ project(luabind)
 find_package(Boost REQUIRED)
 
 include_directories(
-    ${CMAKE_SOURCE_DIR} # luabind
+    ${CMAKE_CURRENT_LIST_DIR}
 
     ${LUA_INCLUDE_DIRS}
 
